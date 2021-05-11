@@ -1,0 +1,115 @@
+---
+title: "Advanced Methods"
+subtitle: "Handling missing data"
+author: "Magdalene Silberberger"
+date: "11/5/2021"
+output: 
+  html_document:
+    theme: flatly
+    highlight: haddock
+    # code_folding: show
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    keep_md: false
+    keep_tex: false ## Change to true if want keep intermediate .tex file
+  pdf_document:
+    toc: TRUE
+    
+knit: (function(inputFile, encoding) {
+ rmarkdown::render(inputFile, encoding = encoding, 
+ output_format = 'all') 
+ })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+By default, most of the regression models in R work with the complete cases of the data. This means that they exclude the cases in which there is at least one NA. 
+
+## Illustration: Air Quality in NYC
+
+We will use the [air quality data set](https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/airquality) from base R. 
+
+```{r airquality, cache=TRUE}
+data(airquality)
+head(airquality)
+```
+
+Summarize the data: Which variables have missing observations?
+
+```{r airquality_sum, cache=TRUE}
+summary(airquality)
+```
+
+Let's check how many observations are actually complete:
+
+```{r airquality_comp, cache=TRUE}
+comp <- complete.cases(airquality)
+mean(comp) 
+```
+
+Only 72.55% of cases are actually complete. 
+
+Now let's add more NAs. 
+
+```{r airquality_morena, cache=TRUE}
+set.seed(123456)
+airquality$Solar.R[runif(nrow(airquality)) < 0.7] <- NA
+airquality$Day[runif(nrow(airquality)) < 0.1] <- NA
+```
+
+```{r airquality_comp_na, cache=TRUE}
+comp_na <- complete.cases(airquality)
+mean(comp_na)
+```
+
+Now only 15.67% of cases are complete. 
+
+Let's look at those:
+
+```{r airquality_comp_na_head, cache=TRUE}
+head(airquality[comp_na, ])
+```
+
+## Task
+
+1. Run a linear model that looks at the determinants of ozone in NYC.
+2. Identify how many observations are actually missing.
+3. Drop the variable that has the most missing observations and re-run the regression.
+4. Compare the results. 
+
+# What to do with missing variables?
+
+There is no "one size fits all" solution for missing data. It depends on the missing data pattern (at random or a systematic lack of data) and the approach to impute the data (parametric, nonparametric, Bayesian, etc). There are three straightforward ways to begin with:
+
+1. Use complete cases only, i.e. restrict the analysis to the set of fully-observed observations. The advantage of this solution is that it can be implemented very easily by using the complete.cases or na.exclude functions. The cost of this approach is a substantial loss of data and therefore the precision of the estimators will be lower. In addition, it may lead to a biased representation of the original data (if the missing process is associated with the values of the response or predictors).
+
+```{r airquality_excl_na, cache=TRUE}
+airqualityNoNA <- na.exclude(airquality)
+summary(airqualityNoNA)
+```
+
+While using complete cases only is the default, the complete cases that R is going to consider depend on which predictors are included. Therefore, it is safer to exclude NA's explicitly before the fitting of a model.
+
+2. Remove predictors with many missing data. This simple solution is useful in case most of the missing data is concentrated in one predictor.
+
+3. Use imputation for the missing values. The idea is to replace the missing observations on the response or the predictors with artificial values that try to preserve the dataset structure:
+When the response is missing, we can use a predictive model to predict the missing response (possibly using sample means), then create a new fully-observed dataset containing the predictions instead of the missing values, and finally re-estimate the predictive model in this expanded dataset. However, be aware that you are in a way messing with the original data and be careful of too much manipulation when using imputation for missing values. 
+
+To identify the missing data you can use VIM's function to visualize missing data. It gives the percentage of NA's for each variable and for the most important combinations of NA's.
+
+```{r vim, cache=TRUE}
+VIM::aggr(airquality)
+```
+
+## Task
+
+1. Run a regression removing the most problematic data in terms of missing variables and see how the results of the other predictors change. 
+2. Explain the relationship that you observe in your "reduced" model. 
+3. Graph the most important (in your opinion) relationships in a scatter plot. 
+4. Upload everything to the github student folder. (optional)
+
