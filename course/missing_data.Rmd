@@ -108,8 +108,9 @@ VIM::aggr(airquality)
 
 ## Task
 
-1. Run a regression removing the most problematic data in terms of missing variables and see how the results of the other predictors change. 
-2. Explain the relationship that you observe in your "reduced" model. 
-3. Graph the most important (in your opinion) relationships in a scatter plot. 
-4. Upload everything to the github student folder. (optional)
+1. Run the regression with the model that has many missings and compare the results of the model first estimated and the reduced model. 
+2. Explore another way to deal with missing observations.
+3. Explain the relationship that you observe in your altered model. 
+4. Graph the most important (in your opinion) relationships (of either model) in a scatter plot. 
+5. Upload everything to the github student folder. (optional)
 
